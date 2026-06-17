@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albaranes · Tierra Trágame</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --rojo: #C8211A;
+    --negro: #1A1A1A;
+    --crema: #F7F4EF;
+    --arena: #EDE8DF;
+    --gris: #8A8680;
+    --verde: #2D6A4F;
+    --verde-claro: #E8F4EE;
+    --naranja: #E07B39;
+    --error: #C8211A;
+    --borde: #D4CFC7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--crema);
+    color: var(--negro);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--negro);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .logo {
+    font-family: 'Playfair Display', serif;
+    color: white;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+  }
+
+  header .logo span {
+    color: var(--rojo);
+  }
+
+  header .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gris);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid #333;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* CONFIG API */
+  .config-bar {
+    background: var(--negro);
+    color: white;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .config-bar label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--gris);
+    white-space: nowrap;
+  }
+
+  .config-bar input {
+    flex: 1;
+    background: #2A2A2A;
+    border: 1px solid #3A3A3A;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .config-bar input:focus { outline: 1px solid var(--rojo); }
+
+  .btn-conectar {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  .btn-conectar:hover { opacity: 0.85; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+  }
+  .status-dot.ok { background: #4CAF50; }
+  .status-dot.error { background: var(--rojo); }
+
+  /* STEP LAYOUT */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .step {
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .step.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .step.done {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--arena);
+    background: var(--crema);
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gris);
+    background: var(--arena);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .step.done .step-num {
+    background: var(--verde);
+    color: white;
+  }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .step-body {
+    padding: 20px;
+  }
+
+  /* CLIENTE SELECTOR */
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .search-input:focus { outline: 1px solid var(--rojo); }
+
+  .cliente-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    display: none;
+  }
+
+  .cliente-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid var(--arena);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+  }
+
+  .cliente-item:last-child { border-bottom: none; }
+  .cliente-item:hover { background: var(--arena); }
+
+  .cliente-item.galera {
+    position: relative;
+  }
+
+  .galera-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    background: var(--naranja);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .cliente-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--verde-claro);
+    border: 1px solid #A8D5BC;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--verde);
+  }
+
+  /* WHATSAPP INPUT */
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+    background: white;
+  }
+
+  textarea:focus { outline: 1px solid var(--rojo); }
+
+  .btn-interpretar {
+    margin-top: 12px;
+    background: var(--negro);
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+
+  .btn-interpretar:hover { background: #333; }
+
+  /* RESULTADO INTERPRETACION */
+  .albaran-preview {
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .albaran-header {
+    background: var(--negro);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .albaran-header .cliente-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+  }
+
+  .albaran-header .tarifa-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    background: var(--naranja);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .albaran-header .tarifa-badge.general {
+    background: #444;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background: var(--arena);
+  }
+
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gris);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  td {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--arena);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .td-producto { font-weight: 500; }
+
+  .td-precio {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  .td-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--negro);
+  }
+
+  .td-nota {
+    font-size: 11px;
+    color: var(--gris);
+    font-style: italic;
+  }
+
+  .albaran-footer {
+    background: var(--crema);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--borde);
+  }
+
+  .total-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--gris);
+    text-transform: uppercase;
+  }
+
+  .total-valor {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--negro);
+  }
+
+  /* NOTAS PARA JOSE */
+  .aviso-interpretacion {
+    margin-top: 12px;
+    background: #FFF8F0;
+    border: 1px solid #F5D9B8;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #8A5A2A;
+    line-height: 1.6;
+  }
+
+  .aviso-interpretacion strong { color: #6A3E10; }
+
+  /* BOTONES ACCION */
+  .acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .btn-crear {
+    background: var(--verde);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+
+  .btn-crear:hover { background: #245A40; }
+  .btn-crear:disabled { background: #9CC4B2; cursor: not-allowed; }
+
+  .btn-reset {
+    background: white;
+    color: var(--negro);
+    border: 1px solid var(--borde);
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-reset:hover { background: var(--arena); }
+
+  /* SUCCESS */
+  .success-banner {
+    background: var(--verde);
+    color: white;
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    display: none;
+  }
+
+  .success-banner.visible { display: flex; }
+
+  .success-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .success-text strong {
+    font-size: 15px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .success-text a {
+    color: #A8D5BC;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* LOADING */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 13px;
+    color: var(--gris);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .spinner-dark {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,0.15);
+    border-top-color: var(--negro);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* EDIT INLINE */
+  .editable {
+    border: none;
+    border-bottom: 1px dashed var(--borde);
+    background: transparent;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    width: 60px;
+    text-align: center;
+    padding: 2px 4px;
+  }
+
+  .editable:focus { outline: none; border-bottom-color: var(--rojo); }
+
+  .btn-eliminar-linea {
+    background: none;
+    border: none;
+    color: var(--gris);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+
+  .btn-eliminar-linea:hover { color: var(--rojo); }
+
+  /* MSG */
+  .msg-error {
+    background: #FFF0F0;
+    border: 1px solid #F5B8B8;
+    color: var(--rojo);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--gris);
+    margin-top: 6px;
+  }
+
+  select {
+    padding: 10px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: white;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  select:focus { outline: 1px solid var(--rojo); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TIERRA <span>TRÁGAME</span></div>
+  <div class="badge">Gestor de Albaranes</div>
+</header>
+
+<div class="main">
+
+  <!-- CONFIG API -->
+  <div class="config-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <label>API HOLDED</label>
+    <input type="password" id="holdedKey" placeholder="Pega aquí tu API token de Holded" />
+    <label>API CLAUDE</label>
+    <input type="password" id="claudeKey" placeholder="API key de Anthropic" />
+    <button class="btn-conectar" onclick="conectar()">Conectar</button>
+  </div>
+
+  <div class="steps">
+
+    <!-- STEP 1: CLIENTE -->
+    <div class="step" id="step1">
+      <div class="step-header">
+        <div class="step-num" id="num1">1</div>
+        <div class="step-title">Seleccionar cliente</div>
+      </div>
+      <div class="step-body">
+        <div class="search-row">
+          <input class="search-input" id="searchCliente" type="text" placeholder="Buscar cliente por nombre..." oninput="filtrarClientes()" />
+        </div>
+        <div class="cliente-list" id="clienteList"></div>
+        <div id="clienteSeleccionado" style="display:none"></div>
+        <div class="hint">Los clientes del grupo Galera se marcan automáticamente con tarifa especial.</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: WHATSAPP -->
+    <div class="step" id="step2">
+      <div class="step-header">
+        <div class="step-num" id="num2">2</div>
+        <div class="step-title">Pegar mensaje de WhatsApp</div>
+      </div>
+      <div class="step-body">
+        <textarea id="mensajeWA" placeholder="Pega aquí el mensaje de WhatsApp del cliente...&#10;&#10;Ej: hola buenas, para mañana&#10;_2 boquerones&#10;_1 caja tosta pemienton&#10;muchas gracias"></textarea>
+        <button class="btn-interpretar" onclick="interpretarPedido()">
+          <span id="btnInterpretarIcon">✦</span>
+          <span id="btnInterpretarText">Interpretar pedido</span>
+        </button>
+        <div class="msg-error" id="errorInterpretar"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: REVISION -->
+    <div class="step" id="step3">
+      <div class="step-header">
+        <div class="step-num" id="num3">3</div>
+        <div class="step-title">Revisar y confirmar albarán</div>
+      </div>
+      <div class="step-body">
+        <div class="albaran-preview" id="albaranPreview" style="display:none">
+          <div class="albaran-header">
+            <div class="cliente-name" id="previewClienteNombre"></div>
+            <div id="previewTarifaBadge"></div>
+          </div>
+          <table id="tablaLineas">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Precio unit.</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLineas"></tbody>
+          </table>
+          <div class="albaran-footer">
+            <div>
+              <div class="total-label">Total sin IVA</div>
+            </div>
+            <div class="total-valor" id="totalValor">—</div>
+          </div>
+        </div>
+
+        <div class="aviso-interpretacion" id="avisoInterpretacion" style="display:none"></div>
+
+        <div class="acciones" id="accionesDiv" style="display:none">
+          <button class="btn-crear" id="btnCrear" onclick="crearAlbaran()">
+            <span id="btnCrearIcon">↑</span>
+            <span id="btnCrearText">Crear albarán en Holded</span>
+          </button>
+          <button class="btn-reset" onclick="resetear()">Nuevo pedido</button>
+        </div>
+
+        <div class="msg-error" id="errorCrear"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-banner" id="successBanner" style="margin-top:24px">
+    <div class="success-icon">✓</div>
+    <div class="success-text">
+      <strong>¡Albarán creado en Holded!</strong>
+      <a id="successLink" href="#" target="_blank">Ver en Holded →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── CATÁLOGO ────────────────────────────────────────────────────────────────
+
+const CATALOGO = [
+  // SALAZONES
+  { nombre: "Anchoa del Cantábrico 00", alias: ["anchoa 00","anchoas 00","anxoves 00"], unidad: "tarrina", precio: 49.97 },
+  { nombre: "Anchoa del Cantábrico 0", alias: ["anchoa 0","anchoas 0","anxoves 0"], unidad: "tarrina", precio: 24.04 },
+  { nombre: "Boquerón en vinagre", alias: ["boqueron","boquerones","boquerón"], unidad: "tarrina", precio: 18.14 },
+  { nombre: "Lomo sardina ahumada", alias: ["sardina ahumada","sardina fumada","sardines ahumades","lomo sardina"], unidad: "pieza", precio: 35.72 },
+  { nombre: "Mojama de atún extra", alias: ["mojama","mojama extra","mojama ¹","mojama 1"], unidad: "kg", precio: 49.87 },
+  { nombre: "Atún ahumado", alias: ["atun ahumado","atún ahumado"], unidad: "tarrina", precio: 46.52 },
+  // QUESOS
+  { nombre: "Francisco Sudao – crema", alias: ["crema de queso","queso sudado","crema francisco","botea quesso sudado","bote queso sudado","crema queso oveja"], unidad: "kg", precio: 24.96 },
+  { nombre: "Gran Reserva Francisco – Leche cruda oveja", alias: ["gran reserva francisco","francisco reserva","queso francisco reserva","queso reserva","3 kg queso francisco","francisco leche cruda"], unidad: "kg", precio: 26.04 },
+  { nombre: "Sudao azul de cabra", alias: ["sudao azul","azul cabra","queso azul"], unidad: "pieza", precio: null, nota: "Precio variable / consultar stock" },
+  { nombre: "Beso de Queso", alias: ["beso de queso","beso queso"], unidad: "pieza", precio: 28.64 },
+  { nombre: "Torta cremoso Francisco mini", alias: ["torta oveja","torta cremoso","torta mini"], unidad: "pieza", precio: 4.62 },
+  // ACEITUNAS Y ENCURTIDOS
+  { nombre: "Manzanilla sin hueso", alias: ["manzanilla sin hueso","manzanilla"], unidad: "cubo 2,5kg", precio: 16.85 },
+  { nombre: "Alcaparrones", alias: ["alcaparrones","alcaparron"], unidad: "cubo", precio: 22.89 },
+  { nombre: "Pico limón machacada / Mezcla pepas", alias: ["aceituna machacada","mezcla pepas","pico limon","aceitunas machacadas","aceites machacada"], unidad: "cubo 4,5kg", precio: 31.24 },
+  { nombre: "Pepinos agridulces", alias: ["pepinillos","pepinos","pepinos agridulces"], unidad: "lata", precio: 24.97 },
+  // CONSERVAS VEGETALES
+  { nombre: "Espárragos blancos", alias: ["esparrago","espárragos","espárrago"], unidad: "caja 24 latas", precio: 144.96 },
+  { nombre: "Garbanzos", alias: ["garbanzo","garbanzos"], unidad: "caja 12u", precio: 31.89 },
+  { nombre: "Tomate pelado entero asado con leña", alias: ["tomate leña","tomate pelado","tomate entero leña","caja tomate leña"], unidad: "caja", precio: 93.59 },
+  { nombre: "Tomate semi-seco", alias: ["tomate semi seco","tomate semiseco","tomate semi-seco"], unidad: "caja 6x2,5kg", precio: 69.06, nota: "1 bote = 0,5 unidad (media caja)" },
+  { nombre: "Tomate rallado asado con leña", alias: ["tomate rallado"], unidad: "caja", precio: 36.68 },
+  { nombre: "Pimiento piquillo", alias: ["pimiento piquillo","pimientos"], unidad: "caja", precio: 85.17 },
+  // CONSERVAS MAR
+  { nombre: "Berberechos al natural Vengarco 25/35", alias: ["berberecho","berberechos","berberechos al natural"], unidad: "lata", precio: 10.46 },
+  { nombre: "Mejillón en escabeche Vengarco 8/12", alias: ["mejillon","mejillones","mejillón"], unidad: "lata", precio: 4.00 },
+  { nombre: "Ventresca de atún", alias: ["ventresca","ventresca atún"], unidad: "lata", precio: 15.00 },
+  // ACEITE Y VINAGRE
+  { nombre: "Aceite oliva virgen extra Picual 3x5L", alias: ["aceite 5 litros","aceite 5l","aceite oliva 5l","aceite de mesa","aceites 5 litros"], unidad: "caja 3 x 5L", precio: 124.62 },
+  { nombre: "Aceite oliva trufa negra", alias: ["aceite trufa","aceite de oliva trufa","aceite trufa negra"], unidad: "caja 12x250ml", precio: 174.98 },
+  { nombre: "Salsa vinagreta Quim va parir", alias: ["salsa vinagreta","vinagreta quim","salsa quim","vinagreta quimva","salsa vinagreta quimva","quim va parir"], unidad: "botella 500ml", precio: 10.81 },
+  // TRUFA
+  { nombre: "Salsa tartufata", alias: ["tartufata","salsa tartufata","salsa de setas trufa"], unidad: "caja 12x180g", precio: 136.28 },
+  { nombre: "Pasta de trufa", alias: ["pasta de trufa","pasta trufa"], unidad: "bote", precio: null, nota: "Consultar precio" },
+  // PICOS Y PANES
+  { nombre: "Torta pimentón / Romero / Sésamo", alias: ["torta pimenton","tosta de pemienton","tosta pemienton","tosta pimiento","torta de aceite pimenton"], unidad: "caja 10x180g", precio: 24.93 },
+  { nombre: "Pa bufat", alias: ["pa bufat","pan bufat","pan soplao"], unidad: "caja 12x120g", precio: 29.12 },
+  { nombre: "Patatas chips Coquere's AOVE", alias: ["chips","patatas chips","bolsa patatas chips","chips aove","caja chips"], unidad: "caja 14x150g", precio: 34.89 },
+  // VARIOS
+  { nombre: "Mermelada de tomate", alias: ["mermelada tomate","mermelada de tomate"], unidad: "caja 6x400g", precio: 48.46 },
+  { nombre: "Olivada", alias: ["olivada"], unidad: "caja 6x400g", precio: 68.72 },
+  { nombre: "Mermelada de aceite de oliva", alias: ["mermelada aceite oliva"], unidad: "caja 6x400g", precio: 48.46 },
+];
+
+// PRECIOS ESPECIALES GRUPO GALERA
+const PRECIOS_GALERA = {
+  "Pico limón machacada / Mezcla pepas": 29.96,
+  "Pa bufat": 27.62,
+  "Tomate semi-seco": 69.06,
+  "Pepinos agridulces": 25.71,
+  "Mejillón en escabeche Vengarco 8/12": 4.00,
+  "Boquerón en vinagre": 18.14,
+  "Francisco Sudao – crema": 24.96,
+  "Salsa tartufata": 23.20,
+  "Salsa vinagreta Quim va parir": 10.81,
+  "Garbanzos": 31.89,
+  "Torta pimentón / Romero / Sésamo": 24.93,
+  "Lomo sardina ahumada": 35.72,
+};
+
+// Clientes Galera (se detectan por nombre)
+const GALERA_KEYWORDS = ["galera","4 latas","4latas","letamendi","altafulla","cambrils","tarragona","reus","4 beach"];
+
+// ─── ESTADO ──────────────────────────────────────────────────────────────────
+
+let clientes = [];
+let clienteSeleccionado = null;
+let esGalera = false;
+let lineasPedido = [];
+let holdedContactId = null;
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+window.onload = () => {
+  const savedHolded = localStorage.getItem('tt_holded_key');
+  const savedClaude = localStorage.getItem('tt_claude_key');
+  if (savedHolded) document.getElementById('holdedKey').value = savedHolded;
+  if (savedClaude) document.getElementById('claudeKey').value = savedClaude;
+  if (savedHolded) conectar();
+};
+
+// ─── CONEXIÓN ─────────────────────────────────────────────────────────────────
+
+async function conectar() {
+  const holdedKey = document.getElementById('holdedKey').value.trim();
+  const claudeKey = document.getElementById('claudeKey').value.trim();
+  if (!holdedKey) { alert('Introduce el API token de Holded'); return; }
+
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot';
+
+  try {
+    const res = await fetch(`https://holded-proxy.ttragame.workers.dev/api/invoicing/v1/contacts?page=1`, {
+      headers: { key: holdedKey }
+    });
+    if (!res.ok) throw new Error('Error de autenticación');
+    
+    // Cargar todos los contactos
+    await cargarContactos(holdedKey);
+    
+    localStorage.setItem('tt_holded_key', holdedKey);
+    if (claudeKey) localStorage.setItem('tt_claude_key', claudeKey);
+
+    dot.className = 'status-dot ok';
+    activarStep(1);
+  } catch (e) {
+    dot.className = 'status-dot error';
+    alert('No se pudo conectar con Holded. Revisa el API token.');
+  }
+}
+
+async function cargarContactos(key) {
+  let todos = [];
+  let page = 1;
+  while (true) {
+    const res = await fetch(`https://holded-proxy.ttragame.workers.dev/api/invoicing/v1/contacts?page=${page}`, {
+      headers: { key: key }
+    });
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) break;
+    todos = todos.concat(data);
+    if (data.length < 100) break;
+    page++;
+  }
+  clientes = todos;
+}
+
+// ─── CLIENTES ─────────────────────────────────────────────────────────────────
+
+function filtrarClientes() {
+  const q = document.getElementById('searchCliente').value.toLowerCase().trim();
+  const list = document.getElementById('clienteList');
+  
+  if (q.length < 2) { list.style.display = 'none'; return; }
+  
+  const filtrados = clientes.filter(c => {
+    const nombre = (c.name || '').toLowerCase();
+    const biz = (c.tradeName || '').toLowerCase();
+    return nombre.includes(q) || biz.includes(q);
+  }).slice(0, 15);
+
+  list.innerHTML = '';
+  if (filtrados.length === 0) {
+    list.innerHTML = '<div class="cliente-item">Sin resultados</div>';
+  } else {
+    filtrados.forEach(c => {
+      const galera = esClienteGalera(c.name || '');
+      const div = document.createElement('div');
+      div.className = 'cliente-item' + (galera ? ' galera' : '');
+      div.innerHTML = `
+        <span style="flex:1">${c.name || c.tradeName}</span>
+        ${galera ? '<span class="galera-tag">Galera</span>' : ''}
+      `;
+      div.onclick = () => seleccionarCliente(c, galera);
+      list.appendChild(div);
+    });
+  }
+  list.style.display = 'block';
+}
+
+function esClienteGalera(nombre) {
+  const n = nombre.toLowerCase();
+  return GALERA_KEYWORDS.some(k => n.includes(k));
+}
+
+function seleccionarCliente(c, galera) {
+  clienteSeleccionado = c;
+  holdedContactId = c.id;
+  esGalera = galera;
+
+  document.getElementById('clienteList').style.display = 'none';
+  document.getElementById('searchCliente').value = '';
+
+  const div = document.getElementById('clienteSeleccionado');
+  div.style.display = 'flex';
+  div.className = 'cliente-selected';
+  div.innerHTML = `
+    <span style="flex:1">✓ ${c.name}</span>
+    ${galera ? '<span class="galera-tag">Tarifa Galera</span>' : '<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4A7A60">Tarifa general</span>'}
+    <button onclick="deseleccionarCliente()" style="background:none;border:none;cursor:pointer;color:#4A7A60;font-size:16px;margin-left:8px">✕</button>
+  `;
+
+  marcarStepDone(1);
+  activarStep(2);
+}
+
+function deseleccionarCliente() {
+  clienteSeleccionado = null;
+  holdedContactId = null;
+  esGalera = false;
+  document.getElementById('clienteSeleccionado').style.display = 'none';
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step3').classList.remove('active');
+}
+
+// ─── INTERPRETACIÓN ───────────────────────────────────────────────────────────
+
+async function interpretarPedido() {
+  const mensaje = document.getElementById('mensajeWA').value.trim();
+  if (!mensaje) { alert('Pega primero el mensaje de WhatsApp'); return; }
+
+  const claudeKey = localStorage.getItem('tt_claude_key');
+  if (!claudeKey) { alert('Introduce tu API key de Anthropic para interpretar pedidos'); return; }
+
+  // UI loading
+  document.getElementById('btnInterpretarText').textContent = 'Interpretando...';
+  document.getElementById('btnInterpretarIcon').innerHTML = '<span class="spinner"></span>';
+  document.querySelector('.btn-interpretar').disabled = true;
+
+  const catalogoTexto = CATALOGO.map(p =>
+    `- "${p.nombre}" | alias: ${p.alias.join(', ')} | unidad: ${p.unidad} | precio: ${p.precio ? p.precio + '€' : 'variable'}`
+  ).join('\n');
+
+  const prompt = `Eres el asistente de Tierra Trágame, una distribuidora de conservas y productos gourmet en Barcelona. 
+Tu tarea es interpretar mensajes de WhatsApp de clientes y extraer los productos pedidos.
+
+CATÁLOGO DISPONIBLE:
+${catalogoTexto}
+
+INSTRUCCIONES:
+- Los mensajes pueden tener errores ortográficos, abreviaciones, mezcla catalán/castellano
+- "botea" = botella/bote, "quesso" = queso, "pemienton" = pimentón, "anxoves" = anchoas, "sardina fumada" = sardina ahumada
+- Si mencionan kg (ej: "3 kg queso francisco reserva"), la cantidad es en kg
+- Si mencionan "1 bote tomate semiseco" = 0.5 unidades (media caja)
+- Si el producto no está en el catálogo, inclúyelo igualmente con precio null
+- Responde ÚNICAMENTE con JSON válido, sin markdown, sin texto adicional
+
+FORMATO DE RESPUESTA:
+{
+  "lineas": [
+    {
+      "producto": "nombre exacto del catálogo",
+      "cantidad": número,
+      "unidad": "unidad del producto",
+      "precio_unitario": precio o null,
+      "nota": "solo si hay algo relevante a destacar"
+    }
+  ],
+  "notas_generales": "cualquier aviso importante del mensaje (urgencia, condiciones especiales, etc)"
+}
+
+MENSAJE DEL CLIENTE:
+${mensaje}`;
+
+  try {
+    const res = await fetch('https://anthropic-proxy.ttragame.workers.dev', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const texto = data.content[0].text.trim();
+    const clean = texto.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    // Aplicar precios con tarifa correcta
+    lineasPedido = parsed.lineas.map(l => {
+      let precio = l.precio_unitario;
+      // Buscar en catálogo
+      const prod = CATALOGO.find(p => p.nombre === l.producto);
+      if (prod) {
+        if (esGalera && PRECIOS_GALERA[prod.nombre] !== undefined) {
+          precio = PRECIOS_GALERA[prod.nombre];
+        } else if (prod.precio) {
+          precio = prod.precio;
+        }
+      }
+      return { ...l, precio_unitario: precio };
+    });
+
+    mostrarPreview(parsed.notas_generales);
+    marcarStepDone(2);
+    activarStep(3);
+
+  } catch (e) {
+    document.getElementById('errorInterpretar').style.display = 'block';
+    document.getElementById('errorInterpretar').textContent = 'Error al interpretar el pedido. Revisa tu API key de Anthropic.';
+  }
+
+  document.getElementById('btnInterpretarText').textContent = 'Interpretar pedido';
+  document.getElementById('btnInterpretarIcon').textContent = '✦';
+  document.querySelector('.btn-interpretar').disabled = false;
+}
+
+// ─── PREVIEW ──────────────────────────────────────────────────────────────────
+
+function mostrarPreview(notasGenerales) {
+  document.getElementById('previewClienteNombre').textContent = clienteSeleccionado.name;
+
+  const badge = document.getElementById('previewTarifaBadge');
+  if (esGalera) {
+    badge.innerHTML = '<div class="tarifa-badge">Tarifa Galera</div>';
+  } else {
+    badge.innerHTML = '<div class="tarifa-badge general">Tarifa General</div>';
+  }
+
+  const tbody = document.getElementById('tbodyLineas');
+  tbody.innerHTML = '';
+
+  lineasPedido.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    const total = l.precio_unitario ? (l.precio_unitario * l.cantidad).toFixed(2) : '—';
+    tr.innerHTML = `
+      <td class="td-producto">${l.producto}${l.nota ? '<br><span class="td-nota">' + l.nota + '</span>' : ''}</td>
+      <td><input class="editable" type="number" step="0.5" min="0" value="${l.cantidad}" onchange="actualizarLinea(${i}, 'cantidad', this.value)" /></td>
+      <td class="td-precio">${l.precio_unitario ? l.precio_unitario.toFixed(2) + ' €' : '—'}</td>
+      <td class="td-total" id="total_${i}">${total !== '—' ? total + ' €' : '—'}</td>
+      <td><button class="btn-eliminar-linea" onclick="eliminarLinea(${i})" title="Eliminar">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  actualizarTotal();
+
+  if (notasGenerales) {
+    document.getElementById('avisoInterpretacion').style.display = 'block';
+    document.getElementById('avisoInterpretacion').innerHTML = `<strong>Nota del pedido:</strong> ${notasGenerales}`;
+  }
+
+  document.getElementById('albaranPreview').style.display = 'block';
+  document.getElementById('accionesDiv').style.display = 'flex';
+}
+
+function actualizarLinea(i, campo, valor) {
+  lineasPedido[i][campo] = parseFloat(valor);
+  const total = lineasPedido[i].precio_unitario
+    ? (lineasPedido[i].precio_unitario * lineasPedido[i].cantidad).toFixed(2)
+    : null;
+  document.getElementById(`total_${i}`).textContent = total ? total + ' €' : '—';
+  actualizarTotal();
+}
+
+function eliminarLinea(i) {
+  lineasPedido.splice(i, 1);
+  mostrarPreview('');
+}
+
+function actualizarTotal() {
+  const total = lineasPedido.reduce((sum, l) => {
+    return sum + (l.precio_unitario ? l.precio_unitario * l.cantidad : 0);
+  }, 0);
+  document.getElementById('totalValor').textContent = total.toFixed(2) + ' €';
+}
+
+// ─── CREAR ALBARÁN EN HOLDED ──────────────────────────────────────────────────
+
+async function crearAlbaran() {
+  const holdedKey = localStorage.getItem('tt_holded_key');
+  if (!holdedKey) { alert('No hay API key de Holded guardada'); return; }
+
+  document.getElementById('btnCrearText').textContent = 'Creando...';
+  document.getElementById('btnCrearIcon').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('btnCrear').disabled = true;
+  document.getElementById('errorCrear').style.display = 'none';
+
+  // Buscar producto en Holded para obtener productId
+  // Construir líneas del albarán
+  const productos = [];
+  for (const l of lineasPedido) {
+    // Buscar por nombre en Holded
+    let productId = null;
+    try {
+      const res = await fetch(`https://holded-proxy.ttragame.workers.dev/api/invoicing/v1/products?name=${encodeURIComponent(l.producto)}`, {
+        headers: { key: holdedKey }
+      });
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        productId = data[0].id;
+      }
+    } catch {}
+
+    productos.push({
+      name: l.producto,
+      units: l.cantidad,
+      price: l.precio_unitario || 0,
+      ...(productId ? { productId } : {})
+    });
+  }
+
+  const today = Math.floor(Date.now() / 1000);
+
+  const payload = {
+    contactId: holdedContactId,
+    date: today,
+    notes: `Pedido generado desde app Tierra Trágame · Tarifa: ${esGalera ? 'Galera' : 'General'}`,
+    products: productos,
+  };
+
+  try {
+    const res = await fetch(`https://holded-proxy.ttragame.workers.dev/api/invoicing/v1/waybills`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        key: holdedKey
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    
+    if (data && (data.id || data._id || data.status === 'ok' || data.docNumber)) {
+      const docId = data.id || data._id || '';
+      document.getElementById('successBanner').classList.add('visible');
+      document.getElementById('successLink').href = docId
+        ? `https://app.holded.com/sales/waybills/${docId}`
+        : 'https://app.holded.com/sales/waybills';
+      document.getElementById('successLink').textContent = 'Ver albarán en Holded →';
+      document.getElementById('accionesDiv').style.display = 'none';
+    } else {
+      throw new Error(JSON.stringify(data));
+    }
+
+  } catch (e) {
+    document.getElementById('errorCrear').style.display = 'block';
+    document.getElementById('errorCrear').textContent = 'Error al crear el albarán en Holded. ' + e.message;
+  }
+
+  document.getElementById('btnCrearText').textContent = 'Crear albarán en Holded';
+  document.getElementById('btnCrearIcon').textContent = '↑';
+  document.getElementById('btnCrear').disabled = false;
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+function activarStep(n) {
+  document.getElementById(`step${n}`).classList.add('active');
+  if (n > 1) document.getElementById(`step${n}`).classList.remove('done');
+}
+
+function marcarStepDone(n) {
+  document.getElementById(`step${n}`).classList.add('done');
+  document.getElementById(`num${n}`).textContent = '✓';
+}
+
+function resetear() {
+  clienteSeleccionado = null;
+  holdedContactId = null;
+  esGalera = false;
+  lineasPedido = [];
+
+  document.getElementById('mensajeWA').value = '';
+  document.getElementById('clienteSeleccionado').style.display = 'none';
+  document.getElementById('albaranPreview').style.display = 'none';
+  document.getElementById('accionesDiv').style.display = 'none';
+  document.getElementById('avisoInterpretacion').style.display = 'none';
+  document.getElementById('successBanner').classList.remove('visible');
+  document.getElementById('errorCrear').style.display = 'none';
+  document.getElementById('errorInterpretar').style.display = 'none';
+
+  ['step2','step3'].forEach(id => {
+    document.getElementById(id).classList.remove('active','done');
+  });
+
+  document.getElementById('num2').textContent = '2';
+  document.getElementById('num3').textContent = '3';
+}
+</script>
+</body>
+</html>
