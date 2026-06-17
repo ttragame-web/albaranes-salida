@@ -780,7 +780,7 @@ async function conectar() {
   dot.className = 'status-dot';
 
   try {
-    const res = await fetch('https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/contacts?page=1', {
+    const res = await fetch('https://corsproxy.io/?https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/contacts?page=1', {
       headers: { key: holdedKey }
     });
     if (!res.ok) throw new Error('Error de autenticación');
@@ -803,7 +803,7 @@ async function cargarContactos(key) {
   let todos = [];
   let page = 1;
   while (true) {
-    const res = await fetch(`https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/contacts?page=${page}`, {
+    const res = await fetch(`https://corsproxy.io/?https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/contacts?page=${page}`, {
       headers: { key: key }
     });
     const data = await res.json();
@@ -1059,7 +1059,7 @@ async function crearAlbaran() {
     // Buscar por nombre en Holded
     let productId = null;
     try {
-      const res = await fetch(`https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/products?name=${encodeURIComponent(l.producto)}`, {
+      const res = await fetch(`https://corsproxy.io/?https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/products?name=${encodeURIComponent(l.producto)}`, {
         headers: { key: holdedKey }
       });
       const data = await res.json();
@@ -1086,7 +1086,7 @@ async function crearAlbaran() {
   };
 
   try {
-    const res = await fetch('https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/waybills', {
+    const res = await fetch('https://corsproxy.io/?https://corsproxy.io/?https://api.holded.com/api/invoicing/v1/waybills', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
